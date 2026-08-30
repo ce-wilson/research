@@ -1,0 +1,1414 @@
+<title>Datasource Onboarding on OpenLineage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --paper:      #F1F3F0;
+  --surface:    #FBFCFA;
+  --surface-2:  #E7EAE5;
+  --ink:        #171C1A;
+  --ink-soft:   #59635E;
+  --ink-faint:  #838C87;
+  --rule:       #D4D9D2;
+  --rule-soft:  #E2E6E0;
+  --accent:     #14595C;
+  --accent-2:   #0E4143;
+  --verified:   #14595C;
+  --inferred:   #8A5510;
+  --pending:    #5F5470;
+  --crit:       #8F2A2A;
+  --high:       #96520F;
+  --med:        #6B5E17;
+  --low:        #3F6350;
+  --code-bg:    #EAEDE8;
+  --sel:        #C9DBD9;
+
+  --f-display: "Spectral", Georgia, "Times New Roman", serif;
+  --f-body:    "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 68ch;
+  --wide: 1180px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:     #101412;
+    --surface:   #171C1A;
+    --surface-2: #1F2523;
+    --ink:       #E4E9E5;
+    --ink-soft:  #9BA5A0;
+    --ink-faint: #6E7873;
+    --rule:      #2B3230;
+    --rule-soft: #222826;
+    --accent:    #5FB5B2;
+    --accent-2:  #86CECA;
+    --verified:  #5FB5B2;
+    --inferred:  #C99245;
+    --pending:   #A093B8;
+    --crit:      #DC7C7C;
+    --high:      #D0954C;
+    --med:       #BBAA4E;
+    --low:       #7DAF95;
+    --code-bg:   #1B211F;
+    --sel:       #24413F;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:     #101412;
+  --surface:   #171C1A;
+  --surface-2: #1F2523;
+  --ink:       #E4E9E5;
+  --ink-soft:  #9BA5A0;
+  --ink-faint: #6E7873;
+  --rule:      #2B3230;
+  --rule-soft: #222826;
+  --accent:    #5FB5B2;
+  --accent-2:  #86CECA;
+  --verified:  #5FB5B2;
+  --inferred:  #C99245;
+  --pending:   #A093B8;
+  --crit:      #DC7C7C;
+  --high:      #D0954C;
+  --med:       #BBAA4E;
+  --low:       #7DAF95;
+  --code-bg:   #1B211F;
+  --sel:       #24413F;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--sel); color: var(--ink); }
+
+.wrap {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 32px 120px;
+}
+
+.col {
+  max-width: var(--measure);
+}
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding: 72px 0 40px;
+  margin-bottom: 8px;
+}
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 22px;
+}
+
+h1 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(2.3rem, 5.4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.019em;
+  text-wrap: balance;
+  margin: 0 0 24px;
+  max-width: 20ch;
+}
+
+.standfirst {
+  font-family: var(--f-display);
+  font-size: clamp(1.09rem, 1.9vw, 1.28rem);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 60ch;
+  margin: 0 0 34px;
+}
+
+.standfirst strong { color: var(--ink); font-weight: 600; }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 30px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.meta b {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* ---------- nav ---------- */
+
+nav.toc {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+  margin: 0 -32px 56px;
+  padding: 0 32px;
+}
+
+nav.toc ol {
+  list-style: none;
+  display: flex;
+  gap: 0;
+  margin: 0 auto;
+  padding: 0;
+  max-width: var(--wide);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+nav.toc a {
+  display: block;
+  padding: 13px 15px 12px;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .14s, border-color .14s;
+}
+
+nav.toc a:hover,
+nav.toc a:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
+nav.toc li:first-child a { padding-left: 0; }
+
+/* ---------- sections ---------- */
+
+section { margin-bottom: 76px; scroll-margin-top: 60px; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 3vw, 2.05rem);
+  line-height: 1.15;
+  letter-spacing: -0.013em;
+  text-wrap: balance;
+  margin: 0 0 12px;
+  padding-top: 30px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+h2 .num {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  flex: none;
+  padding-top: 6px;
+}
+
+h3 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 1.28rem;
+  letter-spacing: -0.008em;
+  text-wrap: balance;
+  margin: 46px 0 12px;
+}
+
+h4 {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 34px 0 12px;
+}
+
+p { margin: 0 0 18px; max-width: var(--measure); }
+.lede { font-size: 1.06rem; color: var(--ink-soft); max-width: 64ch; }
+
+ul, ol.list { max-width: var(--measure); padding-left: 22px; margin: 0 0 20px; }
+li { margin-bottom: 8px; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+strong { font-weight: 600; }
+
+code {
+  font-family: var(--f-mono);
+  font-size: 0.855em;
+  background: var(--code-bg);
+  padding: 1.5px 5px;
+  border-radius: 3px;
+  color: var(--accent-2);
+  word-break: break-word;
+}
+
+/* ---------- id chips ---------- */
+
+.id {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 2.5px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.t-ver  { color: var(--verified); border-color: var(--verified); }
+.t-inf  { color: var(--inferred); border-color: var(--inferred); }
+.t-pen  { color: var(--pending);  border-color: var(--pending); }
+.t-crit { color: var(--crit); border-color: var(--crit); }
+.t-high { color: var(--high); border-color: var(--high); }
+.t-med  { color: var(--med);  border-color: var(--med); }
+.t-low  { color: var(--low);  border-color: var(--low); }
+.t-yes  { color: var(--verified); border-color: var(--verified); }
+.t-no   { color: var(--crit); border-color: var(--crit); }
+
+/* ---------- tables ---------- */
+
+.tw {
+  overflow-x: auto;
+  margin: 0 0 26px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 640px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  text-align: left;
+  vertical-align: bottom;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 13px 14px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule-soft);
+  line-height: 1.5;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface); }
+
+td.nw { white-space: nowrap; }
+td.mono, .mono { font-family: var(--f-mono); font-size: 12.5px; }
+caption {
+  caption-side: bottom;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  padding: 12px 14px 0;
+  font-style: italic;
+}
+
+/* ---------- callout ---------- */
+
+.note {
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  padding: 18px 22px;
+  margin: 0 0 26px;
+  max-width: var(--measure);
+  border-radius: 0 4px 4px 0;
+}
+
+.note.warn { border-left-color: var(--crit); }
+.note.soft { border-left-color: var(--inferred); }
+.note p:last-child { margin-bottom: 0; }
+.note h4 { margin-top: 0; }
+
+/* ---------- code blocks ---------- */
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 0 0 26px;
+  font-size: 12.7px;
+  line-height: 1.65;
+  max-width: 100%;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  font-size: inherit;
+  word-break: normal;
+}
+
+.k { color: var(--accent); }
+.s { color: var(--inferred); }
+.c { color: var(--ink-faint); font-style: italic; }
+
+/* ---------- diagram ---------- */
+
+figure { margin: 0 0 30px; }
+
+figcaption {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin-top: 12px;
+  max-width: var(--measure);
+}
+
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 26px 20px;
+  overflow-x: auto;
+}
+
+.diagram svg { display: block; margin: 0 auto; min-width: 560px; }
+
+/* ---------- verdict cards ---------- */
+
+.verdicts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 0 0 30px;
+}
+
+.vc { background: var(--surface); padding: 20px 20px 22px; }
+
+.vc .opt {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 10px;
+}
+
+.vc .verdict {
+  font-family: var(--f-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.vc.win .verdict { color: var(--verified); }
+.vc.lose .verdict { color: var(--crit); }
+.vc.hold .verdict { color: var(--inferred); }
+
+.vc p { font-size: 13.5px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+
+/* ---------- footer ---------- */
+
+footer {
+  border-top: 1px solid var(--rule);
+  padding-top: 26px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--ink-faint);
+  max-width: var(--measure);
+}
+
+footer code { font-size: 12px; }
+
+@media (max-width: 700px) {
+  .wrap { padding: 0 20px 80px; }
+  nav.toc { margin: 0 -20px 40px; padding: 0 20px; }
+  .masthead { padding-top: 48px; }
+  h2 { flex-direction: column; gap: 4px; }
+  h2 .num { padding-top: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Implementation analysis · OpenLineage 1.52.0 / spec 2-0-2</p>
+  <h1>Datasource Onboarding on OpenLineage</h1>
+  <p class="standfirst">
+    The model already separates the three things this problem requires kept apart: <strong>identity</strong>
+    (namespace + name), <strong>description</strong> (facets), and <strong>access</strong> — which OpenLineage
+    deliberately does not model at all. That split is what makes incremental curation, replica provenance, and
+    credential isolation fall out of the design rather than get bolted onto it.
+  </p>
+  <div class="meta">
+    <span><b>Repo HEAD</b> b995ee00c · 2026-08-28</span>
+    <span><b>Latest release</b> 1.52.0</span>
+    <span><b>Spec</b> 2-0-2</span>
+    <span><b>Analysed</b> 2026-08-29</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <ol>
+    <li><a href="#read">The read</a></li>
+    <li><a href="#model">Model</a></li>
+    <li><a href="#mapping">Mappings</a></li>
+    <li><a href="#replica">Replica provenance</a></li>
+    <li><a href="#creds">Credentials</a></li>
+    <li><a href="#ontology">Ontology</a></li>
+    <li><a href="#flow">End-to-end flow</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#open">Open questions</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================ -->
+<section id="read">
+  <h2><span class="num">01</span>What the use case actually asks for</h2>
+
+  <p class="lede">
+    Six requirements, separable, shippable in almost any order. Only the first two are prerequisites for
+    the rest.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:56px">ID</th><th style="width:38%">As stated</th><th>As a modeling problem</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="nw"><span class="id">RQ-1</span></td>
+          <td>“I don't have all of the connections, details, data profiles etc. I need to manually gather and add as I find it.”</td>
+          <td>Incremental, out-of-order, partial metadata accrual against a stable entity identity — with no job run to hang it on.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">RQ-2</span></td>
+          <td>“at first we download sample reports or database exports, usually saved as a csv sometimes a json file”</td>
+          <td>A file artifact is a first-class dataset standing in for a datasource not yet reachable. Later superseded — never deleted.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">RQ-3</span></td>
+          <td>“we get data from a replica but it could be a different platform”</td>
+          <td>Two distinct physical datasets on two platforms representing one logical entity. Both independently addressable.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">RQ-4</span></td>
+          <td>“document the original source of the data and the data's provenance (that it's from a replica)”</td>
+          <td>A directed, traversable edge replica → origin, plus an assertion of <em>how</em>. Must survive lineage queries.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">RQ-5</span></td>
+          <td>“connection details… stored and maintained separately from what we show the users as the data source”</td>
+          <td>Split identity from access. The published identifier must be derivable without secrets and stable across credential rotation.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">RQ-6</span></td>
+          <td>“integrated with our in-house ontology tool, so I'll need to classify it by ontology”</td>
+          <td>Attach external taxonomy terms at dataset <em>and</em> column granularity, round-trippable to an external system of record.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <h4>One framing correction before anything else</h4>
+    <p>
+      OpenLineage is a wire format, not a database. It has no query API, no curation UI, no edit history, and no
+      partial-update semantics of its own. Your curation tool must own the master record; OpenLineage is the
+      emission and interchange format projected out of it. Do not try to use a lineage backend as the system of
+      record for in-progress curation — it is not built for editing, and the incremental model below depends on
+      you being able to re-derive the full picture locally.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="model">
+  <h2><span class="num">02</span>The model, in the parts that matter here</h2>
+
+  <h3>Three event types, not one</h3>
+
+  <p>
+    The spec root is <code>oneOf: [RunEvent, DatasetEvent, JobEvent]</code>. Most OpenLineage material is about
+    the first. The second and third — collectively “static lineage” or “design lineage” — are what this use case
+    runs on, and they are structurally forbidden from referencing a run.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:130px">Event</th><th style="width:130px">Requires</th><th style="width:150px">Structurally forbidden</th><th>Use it for</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono nw">RunEvent</td>
+          <td class="mono">run, job</td>
+          <td>—</td>
+          <td>Something actually executed. Profiling runs, real ingestion, and — as a compatibility fallback — asserted replication.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">DatasetEvent</td>
+          <td class="mono">dataset</td>
+          <td class="mono">job, run</td>
+          <td><strong>The registration primitive.</strong> Every curation act. Schema, docs, ownership, tags, classification.</td>
+        </tr>
+        <tr>
+          <td class="mono nw">JobEvent</td>
+          <td class="mono">job</td>
+          <td class="mono">run</td>
+          <td>Declaring a job's inputs and outputs at design time — a replication or extract you know happens but never observe.</td>
+        </tr>
+      </tbody>
+      <caption>Source: <code>spec/OpenLineage.json</code> lines 28–102, 303.</caption>
+    </table>
+  </div>
+
+  <p>
+    The spec's own documentation names this use case almost verbatim. <code>DatasetEvent</code> exists to
+    “attach metadata to a dataset outside the context of a job or a job run… static schema extraction,
+    documentation generation, or governance,” emitted “when a dataset's metadata is updated <em>or first
+    defined</em>.” Registration does not require inventing a fake job, and does not require the metadata to be
+    complete.
+  </p>
+
+  <h3>Identity is two strings, and facets are optional</h3>
+
+  <p>
+    A dataset <em>is</em> the pair <code>(namespace, name)</code>. Everything else is commentary. The minimum
+    legal registration event carries no facets at all:
+  </p>
+
+<pre><code>{
+  <span class="k">"eventTime"</span>: <span class="s">"2026-08-29T10:00:00Z"</span>,
+  <span class="k">"producer"</span>:  <span class="s">"https://your.org/datasource-registry/1.4.2"</span>,
+  <span class="k">"schemaURL"</span>: <span class="s">"https://openlineage.io/spec/2-0-2/OpenLineage.json#/$defs/DatasetEvent"</span>,
+  <span class="k">"dataset"</span>: {
+    <span class="k">"namespace"</span>: <span class="s">"oracle://prod-ora.provider.example:1521"</span>,
+    <span class="k">"name"</span>:      <span class="s">"ORCL.SALES.ORDERS"</span>
+  }
+}</code></pre>
+
+  <p>
+    That is the whole answer to <span class="id">RQ-1</span>. Declare identity on day one; add facets as you
+    learn them, one event per fact, carrying only what changed.
+  </p>
+
+  <h3>Facet mechanics you will rely on</h3>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:200px">Mechanism</th><th>Behaviour</th><th style="width:100px">Confidence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">BaseFacet extension</td>
+          <td>Requires <code>_producer</code> + <code>_schemaURL</code>, sets <code>additionalProperties: true</code>. Any custom facet key is accepted and stored verbatim, retrievable on query.</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">_deleted: true</td>
+          <td>Retracts a facet. Valid on dataset and job facets <em>only</em> — “not run or input/output facets, which are valid only for a specific run.”</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Event-level: additive</td>
+          <td>“All metadata is additive… we might send additional events specifically for those datasets <em>without re-emitting previously observed inputs or outputs</em>.” Facets you don't mention persist untouched.</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Facet-level: replacement</td>
+          <td>“A facet is an atomic piece of metadata identified by its name… emitting a new facet with the same name for the same entity <strong>replaces the previous facet instance for that entity entirely</strong>.” Not a deep merge.</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Static facets persist forward</td>
+          <td>A dataset facet “applies to all versions moving forward until replaced by a new one.” Deletion is destructive, not a rollback: “we don't get back to the previous one.”</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">facets vs. inputFacets</td>
+          <td>Split by stability: <code>facets</code> is what's static run-to-run; <code>inputFacets</code>/<code>outputFacets</code> are per-read/per-write and exist only on a <code>RunEvent</code>.</td>
+          <td><span class="tag t-ver">Verified</span></td>
+        </tr>
+        <tr>
+          <td class="mono">Consequence</td>
+          <td>A <code>DatasetEvent</code> <strong>cannot carry data profiles.</strong> <code>dataQualityMetrics</code> and <code>inputStatistics</code> are input facets, unreachable without a run.</td>
+          <td><span class="tag t-inf">Inferred</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <h4>The producer rule this forces — and the way it will bite you</h4>
+    <p>
+      The two rules compose into one constraint that governs every line of producer code you write.
+      <strong>You may add new facets freely without resending the old ones. But changing one field inside an
+      existing facet means re-emitting that entire facet object.</strong> There is no partial-update path within
+      a facet.
+    </p>
+    <p>
+      Concretely: emitting a <code>schema</code> facet containing the one column you just documented
+      <em>destroys every other column</em>. Emitting <code>tags</code> with one new tag drops all the others.
+      The failure is silent and it looks like data loss, not like an error.
+    </p>
+    <p>
+      So the curation tool must materialize the complete current value of any facet it touches, from its own
+      master record, and send the whole thing. Enforce that in a single serialization layer rather than at each
+      call site. <span class="id">R-01</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="mapping">
+  <h2><span class="num">03</span>Source and target mappings</h2>
+
+  <h3>Namespace grammar per platform</h3>
+
+  <p>
+    Every namespace form in the convention is <code>{scheme}://{host}:{port}</code>, an ARN, or a bare token.
+    <strong>Not one includes a username, password, or URI userinfo component.</strong> This is the finding that
+    answers <span class="id">RQ-5</span> before you write any code.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:150px">Platform</th><th style="width:44%">Namespace</th><th>Name</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="nw">Oracle</td><td class="mono">oracle://{host}:{port}</td><td class="mono">{serviceName}.{schema}.{table}</td></tr>
+        <tr><td class="nw">Snowflake</td><td class="mono">snowflake://{org}-{account}</td><td class="mono">{database}.{schema}.{table}</td></tr>
+        <tr><td class="nw">Postgres</td><td class="mono">postgres://{host}:{port}</td><td class="mono">{database}.{schema}.{table}</td></tr>
+        <tr><td class="nw">MSSQL</td><td class="mono">mssql://{host}:{port}</td><td class="mono">{database}.{schema}.{table}</td></tr>
+        <tr><td class="nw">DB2</td><td class="mono">db2://{host}:{port}</td><td class="mono">{database}.{schema}.{table}</td></tr>
+        <tr><td class="nw">MySQL</td><td class="mono">mysql://{host}:{port}</td><td class="mono">{database}.{table}</td></tr>
+        <tr><td class="nw">Redshift</td><td class="mono">redshift://{cluster}.{region}:{port}</td><td class="mono">{database}.{schema}.{table}</td></tr>
+        <tr><td class="nw">BigQuery</td><td class="mono">bigquery</td><td class="mono">{project}.{dataset}.{table}</td></tr>
+        <tr><td class="nw">Trino</td><td class="mono">trino://{host}:{port}</td><td class="mono">{catalog}.{schema}.{table}</td></tr>
+        <tr><td class="nw">Unity Catalog</td><td class="mono">unitycatalog://{host}</td><td class="mono">{catalog}.{schema}.{table}</td></tr>
+        <tr><td class="nw">AWS Glue</td><td class="mono">arn:aws:glue:{region}:{account}</td><td class="mono">table/{database}/{table}</td></tr>
+        <tr><td class="nw">S3</td><td class="mono">s3://{bucket}</td><td class="mono">{object key}</td></tr>
+        <tr><td class="nw">Local file</td><td class="mono">file</td><td class="mono">{path}</td></tr>
+        <tr><td class="nw">Remote file</td><td class="mono">file://{host}</td><td class="mono">{path}</td></tr>
+      </tbody>
+      <caption>Abridged from <code>website/docs/spec/naming.md</code>, which covers 40+ platforms. The Python client ships executable builders for these in <code>openlineage.client.naming.dataset</code>.</caption>
+    </table>
+  </div>
+
+  <div class="note soft">
+    <h4>Snowflake is a one-way door</h4>
+    <p>
+      Two namespace formats exist: <code>snowflake://{org}-{account}</code> and the legacy
+      <code>snowflake://{locator}.{region}.{cloud}</code>. The spec warns directly: “If you switch formats
+      later, existing lineage nodes won't connect to new ones.” Standardize on the org-account form from your
+      first event, and store the choice as configuration data, not as code. <span class="id">R-02</span>
+    </p>
+  </div>
+
+  <h3>Facet inventory, with pinned versions</h3>
+
+  <p>
+    Versions are the <code>$id</code> values at repo HEAD. They drift between releases — re-derive before
+    implementing.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:210px">Facet</th><th style="width:70px">Version</th><th style="width:110px">Attach point</th><th style="width:150px">Required</th><th>Serves</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">schema</td><td class="mono">1-2-0</td><td>dataset</td><td class="mono">—</td><td><span class="id">RQ-1</span> <span class="id">RQ-2</span></td></tr>
+        <tr><td class="mono">dataSource</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">—</td><td><span class="id">RQ-4</span> <span class="id">RQ-5</span></td></tr>
+        <tr><td class="mono">datasetType</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">datasetType</td><td><span class="id">RQ-2</span></td></tr>
+        <tr><td class="mono">storage</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">storageLayer</td><td><span class="id">RQ-2</span></td></tr>
+        <tr><td class="mono">hierarchy</td><td class="mono">1-0-0</td><td>dataset</td><td class="mono">hierarchy</td><td><span class="id">RQ-5</span></td></tr>
+        <tr><td class="mono">lineage <span class="tag t-inf">new</span></td><td class="mono">1-0-0</td><td>dataset / job</td><td class="mono">— / entries</td><td><span class="id">RQ-4</span></td></tr>
+        <tr><td class="mono">symlinks</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">identifiers[]</td><td>rejected — see §04</td></tr>
+        <tr><td class="mono">tags</td><td class="mono">1-0-0</td><td>dataset</td><td class="mono">key, value</td><td><span class="id">RQ-6</span></td></tr>
+        <tr><td class="mono">documentation</td><td class="mono">1-1-0</td><td>dataset</td><td class="mono">description</td><td><span class="id">RQ-1</span></td></tr>
+        <tr><td class="mono">ownership</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">owners[].name</td><td><span class="id">RQ-1</span></td></tr>
+        <tr><td class="mono">version</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">datasetVersion</td><td><span class="id">RQ-2</span></td></tr>
+        <tr><td class="mono">lifecycleStateChange</td><td class="mono">1-0-1</td><td>dataset</td><td class="mono">enum, closed</td><td>retirement only — <span class="id">R-04</span></td></tr>
+        <tr><td class="mono">catalog</td><td class="mono">1-1-0</td><td>dataset</td><td class="mono">framework, type, name</td><td><span class="id">RQ-5</span>, with <span class="id">R-03</span></td></tr>
+        <tr><td class="mono">dataQualityMetrics</td><td class="mono">1-0-3</td><td><strong>inputFacets</strong></td><td class="mono">columnMetrics</td><td><span class="id">RQ-1</span> profiles</td></tr>
+        <tr><td class="mono">inputStatistics</td><td class="mono">1-0-0</td><td><strong>inputFacets</strong></td><td class="mono">—</td><td><span class="id">RQ-1</span> profiles</td></tr>
+        <tr><td class="mono">jobType</td><td class="mono">2-0-4</td><td>job</td><td class="mono">processingType, integration</td><td><span class="id">RQ-4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The CSV/JSON sample stage</h3>
+
+  <p>
+    Model the sample file as a genuine dataset with its own identity, schema, and profile — not as a placeholder
+    for the eventual table. When the real source is later discovered, that <em>adds</em> a node and an edge rather
+    than mutating or invalidating the file's record, so the provenance of any analysis already done on the sample
+    stays intact.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:170px">Element</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">namespace</td><td class="mono">file://curation-host</td></tr>
+        <tr><td class="mono">name</td><td class="mono">/landing/provider_a/orders_2026-08-29.csv</td></tr>
+        <tr><td class="mono">datasetType</td><td class="mono">{ "datasetType": "FILE" }</td></tr>
+        <tr><td class="mono">storage</td><td class="mono">{ "storageLayer": "file", "fileFormat": "csv" }</td></tr>
+        <tr><td class="mono">schema</td><td>Inferred columns from the header and a sample of rows</td></tr>
+        <tr><td class="mono">documentation</td><td>Provenance prose — who supplied the extract, when, under what agreement</td></tr>
+      </tbody>
+      <caption><code>storageLayer</code> is required but its documented allowed values are only <code>iceberg</code> and <code>delta</code>. <code>additionalProperties: true</code> means <code>"file"</code> validates; pick a convention and hold to it. <span class="id">R-05</span>, cosmetic.</caption>
+    </table>
+  </div>
+
+  <p>
+    Profiles cannot ride on the <code>DatasetEvent</code>. Model profiling as what it is — a job that ran and
+    read the file:
+  </p>
+
+<pre><code>{
+  <span class="k">"eventType"</span>: <span class="s">"COMPLETE"</span>,
+  <span class="k">"run"</span>: { <span class="k">"runId"</span>: <span class="s">"01920000-0000-7000-8000-000000000001"</span> },
+  <span class="k">"job"</span>: { <span class="k">"namespace"</span>: <span class="s">"your-org/curation"</span>, <span class="k">"name"</span>: <span class="s">"profile.orders_sample"</span> },
+  <span class="k">"inputs"</span>: [{
+    <span class="k">"namespace"</span>: <span class="s">"file://curation-host"</span>,
+    <span class="k">"name"</span>: <span class="s">"/landing/provider_a/orders_2026-08-29.csv"</span>,
+    <span class="k">"inputFacets"</span>: {              <span class="c">// ← only reachable from a RunEvent</span>
+      <span class="k">"dataQualityMetrics"</span>: {
+        <span class="k">"_producer"</span>: <span class="s">"https://your.org/profiler/2.1.0"</span>,
+        <span class="k">"_schemaURL"</span>: <span class="s">"https://openlineage.io/spec/facets/1-0-3/DataQualityMetricsInputDatasetFacet.json"</span>,
+        <span class="k">"rowCount"</span>: 48213, <span class="k">"bytes"</span>: 9114322,
+        <span class="k">"columnMetrics"</span>: { <span class="k">"order_id"</span>: { <span class="k">"nullCount"</span>: 0, <span class="k">"distinctCount"</span>: 48213 } }
+      }
+    }
+  }]
+}</code></pre>
+</section>
+
+<!-- ============================================ -->
+<section id="replica">
+  <h2><span class="num">04</span>Replica provenance — the decision that matters</h2>
+
+  <p class="lede">
+    You need to record that data was read <em>from a replica</em>, and that the replica derives from a named
+    production origin on a different platform. Four mechanisms can express something like this. Only two are
+    right, and the obvious-looking one is actively wrong.
+  </p>
+
+  <div class="verdicts">
+    <div class="vc lose">
+      <div class="opt">Option A — Symlinks</div>
+      <div class="verdict">Rejected</div>
+      <p>The facet asserts identifiers “refer to the same entity,” producing a unified graph. Collapsing prod and replica into one node destroys the exact fact you must document.</p>
+    </div>
+    <div class="vc win">
+      <div class="opt">Option B — lineage facet</div>
+      <div class="verdict">Target model</div>
+      <p>Purpose-built for “lineage curated in a data catalog.” Semantically exact. Blocked today: in no release tag, no consumer support.</p>
+    </div>
+    <div class="vc hold">
+      <div class="opt">Option C — replication job</div>
+      <div class="verdict">Ship this now</div>
+      <p>Two datasets plus an explicit job carrying the edge. Works against every backend. Converges with B.</p>
+    </div>
+    <div class="vc">
+      <div class="opt">Option D — dataSource</div>
+      <div class="verdict">Complement</div>
+      <p>Two optional strings. Records what the datasource <em>is</em>; creates no traversable edge. Use alongside B or C, never instead.</p>
+    </div>
+  </div>
+
+  <h3>Why symlinks is the trap</h3>
+
+  <p>
+    <code>SymlinksDatasetFacet</code> looks like the answer — it exists to relate two identifiers for one thing.
+    But read its definition: it lists “alternative identifiers for a single dataset… allows OpenLineage to
+    understand that these different identifiers refer to <strong>the same entity</strong>, creating a
+    <strong>unified</strong> lineage graph.” It is for an S3 path and its Glue table — one entity, two names.
+  </p>
+  <p>
+    A production Oracle table and its Snowflake replica are two physical copies with different freshness,
+    different access rules, and different platforms. Symlinking them merges the nodes and erases the one fact
+    <span class="id">RQ-4</span> requires you to keep: that you read the replica, and were not permitted to read
+    production.
+  </p>
+
+  <div class="note">
+    <h4>The design proposal draws exactly this line</h4>
+    <p>
+      The static-lineage proposal lists as <em>separate</em> motivating use cases: “create dataset symlinks more
+      easily,” scoped explicitly to naming variants — “FQDN versus hostname, including region vs. not, differing
+      query params” — and “<strong>dataset connections</strong>: ability to connect 2 dataset entities without
+      additional information about the run that created that connection.”
+    </p>
+    <p>
+      Yours is the second. Symlinks resolve two <em>names</em> for one thing; you have two <em>things</em>.
+    </p>
+  </div>
+
+  <h3>The compatibility gradient inside Option C</h3>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:70px">Variant</th><th style="width:230px">Event</th><th style="width:190px">Consumer compatibility</th><th>Semantic fit</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="nw"><span class="id">C-1</span></td>
+          <td>Synthetic <code>RunEvent</code> pair for a <code>replicate.*</code> job</td>
+          <td><span class="tag t-yes">Highest</span> Every backend consumes RunEvent</td>
+          <td>Weakest — asserts a run you never observed, with a fabricated <code>runId</code>. Honest only if timestamps are labelled as assertions.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">C-2</span></td>
+          <td><code>JobEvent</code> with declared inputs/outputs</td>
+          <td><span class="tag t-pen">Pending</span> Static ingestion is uneven</td>
+          <td>Strong — this <em>is</em> the design-time declaration event. No fabricated run.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">C-3</span></td>
+          <td><code>JobEvent</code> + <code>LineageJobFacet.entries</code></td>
+          <td><span class="tag t-no">Lowest</span> Unreleased</td>
+          <td>Strongest — avoids the Cartesian false edges that matter once one replication job covers many tables.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <h4>Why the tiering is safe</h4>
+    <p>
+      B, C-1, C-2 and C-3 all use the <strong>same two dataset identities</strong>. Shipping C-1 today and
+      adding B later is purely additive — no renaming, no rewriting history, no broken node identity. The
+      compatibility tier is a transport decision you can defer; the model underneath does not change.
+    </p>
+  </div>
+
+  <h3>The resulting graph</h3>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 620 330" width="620" height="330" role="img"
+           aria-label="Three-node lineage graph: Oracle production table flows to Snowflake replica, which flows to a CSV sample file.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+
+        <!-- node 1: prod -->
+        <rect x="60" y="18" width="500" height="66" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+        <text x="78" y="41" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-faint)">oracle://prod-ora.provider.example:1521</text>
+        <text x="78" y="61" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--ink)">ORCL.SALES.ORDERS</text>
+        <text x="78" y="77" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--crit)">TABLE · PROD_READ_FORBIDDEN</text>
+
+        <!-- edge 1 -->
+        <line x1="120" y1="84" x2="120" y2="122" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="136" y="100" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" fill="var(--accent)">S-6 · replication edge</text>
+        <text x="136" y="115" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-faint)">lineage.inputs  |  replicate.orders RunEvent</text>
+
+        <!-- node 2: replica -->
+        <rect x="60" y="128" width="500" height="66" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+        <text x="78" y="151" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-faint)">snowflake://acme-prod</text>
+        <text x="78" y="171" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--ink)">REPLICA_DB.SALES.ORDERS</text>
+        <text x="78" y="187" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--verified)">TABLE · source_role=REPLICA · ontology: CustomerOrder</text>
+
+        <!-- edge 2 -->
+        <line x1="120" y1="194" x2="120" y2="232" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="136" y="217" font-family="IBM Plex Mono, monospace" font-size="10.5" font-weight="600" fill="var(--accent)">S-7 · extract.orders_sample</text>
+
+        <!-- node 3: file -->
+        <rect x="60" y="238" width="500" height="66" rx="4" fill="var(--surface-2)" stroke="var(--rule)"/>
+        <text x="78" y="261" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink-faint)">file://curation-host</text>
+        <text x="78" y="281" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--ink)">/landing/provider_a/orders_2026-08-29.csv</text>
+        <text x="78" y="297" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-soft)">FILE · csv · profiled at S-3 · SUPERSEDED at S-13</text>
+      </svg>
+    </div>
+    <figcaption>
+      Three nodes, two edges. “We read the replica, not production” becomes a <em>topological</em> property of
+      the graph — it survives lineage traversal and cannot be lost the way a tag on a merged node can. That is
+      the whole argument against symlinks.
+    </figcaption>
+  </figure>
+
+  <h3>The composite replica event</h3>
+
+<pre><code>{
+  <span class="k">"dataset"</span>: {
+    <span class="k">"namespace"</span>: <span class="s">"snowflake://acme-prod"</span>,
+    <span class="k">"name"</span>: <span class="s">"REPLICA_DB.SALES.ORDERS"</span>,
+    <span class="k">"facets"</span>: {
+      <span class="k">"datasetType"</span>: { <span class="k">"datasetType"</span>: <span class="s">"TABLE"</span>, <span class="k">"subType"</span>: <span class="s">"EXTERNAL"</span> },
+      <span class="k">"dataSource"</span>:  { <span class="k">"name"</span>: <span class="s">"Provider A — Snowflake read replica"</span>, <span class="k">"uri"</span>: <span class="s">"snowflake://acme-prod"</span> },
+      <span class="k">"hierarchy"</span>:   { <span class="k">"hierarchy"</span>: [
+        { <span class="k">"type"</span>: <span class="s">"DATABASE"</span>, <span class="k">"name"</span>: <span class="s">"REPLICA_DB"</span> },
+        { <span class="k">"type"</span>: <span class="s">"SCHEMA"</span>,   <span class="k">"name"</span>: <span class="s">"SALES"</span> },
+        { <span class="k">"type"</span>: <span class="s">"TABLE"</span>,    <span class="k">"name"</span>: <span class="s">"ORDERS"</span> }
+      ]},
+      <span class="k">"tags"</span>: { <span class="k">"tags"</span>: [
+        { <span class="k">"key"</span>: <span class="s">"source_role"</span>,       <span class="k">"value"</span>: <span class="s">"REPLICA"</span>,  <span class="k">"source"</span>: <span class="s">"CURATION"</span> },
+        { <span class="k">"key"</span>: <span class="s">"origin_namespace"</span>,  <span class="k">"value"</span>: <span class="s">"oracle://prod-ora.provider.example:1521"</span> },
+        { <span class="k">"key"</span>: <span class="s">"origin_name"</span>,       <span class="k">"value"</span>: <span class="s">"ORCL.SALES.ORDERS"</span> },
+        { <span class="k">"key"</span>: <span class="s">"replication_mode"</span>,  <span class="k">"value"</span>: <span class="s">"CDC"</span> },
+        { <span class="k">"key"</span>: <span class="s">"access_constraint"</span>, <span class="k">"value"</span>: <span class="s">"PROD_READ_FORBIDDEN"</span> }
+      ]},
+      <span class="k">"lineage"</span>: {                      <span class="c">// ← target model, unreleased</span>
+        <span class="k">"_schemaURL"</span>: <span class="s">"https://openlineage.io/spec/facets/1-0-0/LineageFacet.json#/$defs/LineageDatasetFacet"</span>,
+        <span class="k">"inputs"</span>: [{
+          <span class="k">"namespace"</span>: <span class="s">"oracle://prod-ora.provider.example:1521"</span>,
+          <span class="k">"name"</span>: <span class="s">"ORCL.SALES.ORDERS"</span>,
+          <span class="k">"type"</span>: <span class="s">"DATASET"</span>,
+          <span class="k">"transformations"</span>: [{
+            <span class="k">"type"</span>: <span class="s">"DIRECT"</span>, <span class="k">"subtype"</span>: <span class="s">"IDENTITY"</span>,
+            <span class="k">"description"</span>: <span class="s">"Provider-managed CDC replication Oracle → Snowflake"</span>,
+            <span class="k">"masking"</span>: false
+          }]
+        }]
+      }
+    }
+  }
+}</code></pre>
+
+  <p>
+    The <code>tags</code> block is deliberate redundancy. It renders in backends that surface tags today, while
+    <code>lineage</code> carries the machine-traversable edge once support lands. The tag keys are a lossy but
+    readable projection of the same facts — cheap enough to be worth the duplication.
+  </p>
+
+  <div class="note soft">
+    <h4>Maturity check before you build on Option B</h4>
+    <p>
+      <code>LineageFacet</code> arrived in commit <code>2cfa2594b</code> on 2026-08-14.
+      <code>git tag --contains 2cfa2594b</code> returns <strong>empty</strong> — it is in no release, and absent
+      from the CHANGELOG including its Unreleased section. Python has generated bindings and Java has a test;
+      neither is shipped. Re-run that command before promoting B from target to plan. <span class="id">R-08</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="creds">
+  <h2><span class="num">05</span>Credentials: the namespace is the vault key</h2>
+
+  <p>
+    <span class="id">RQ-5</span> asks for connection details maintained separately from the displayed datasource
+    identity. OpenLineage does not model credentials at all — and its identity grammar is credential-free by
+    construction. That is not an accident you can rely on loosely; it is reinforced in the client.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:40%">Evidence</th><th>What it establishes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>No namespace convention across 40+ platforms includes userinfo</td>
+          <td>The published identifier is derivable without secrets</td>
+        </tr>
+        <tr>
+          <td><code>RedactMixin</code> with a <code>_skip_redact</code> class-var allow-list</td>
+          <td>The client's default posture is to redact unless explicitly exempted</td>
+        </tr>
+        <tr>
+          <td><code>DatasourceDatasetFacet</code> exempts <code>name</code> and <code>uri</code></td>
+          <td>The spec assumes that <code>uri</code> is <em>already</em> credential-free — an assumption you must uphold</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Rules</h4>
+
+  <ol class="list">
+    <li><strong>Derive the vault key from the namespace, never the reverse.</strong> <code>oracle://prod-ora.provider.example:1521</code> → <code>datasources/oracle/prod-ora.provider.example/1521</code>. Rotation never changes the namespace, so no lineage node is ever orphaned by a password change.</li>
+    <li><strong>Never emit userinfo.</strong> <code>oracle://user:pass@host:1521</code> is not a legal namespace, and would fork dataset identity on every rotation.</li>
+    <li><strong>Sanitize centrally.</strong> One <code>sanitize_uri()</code> in the emitter: strip userinfo, drop every query parameter not on an explicit allow-list. Unit-test it.</li>
+    <li><strong>Never put connection details in <code>documentation.description</code></strong> — free text with no redaction contract.</li>
+    <li><strong>The user-facing display name</strong> — server / database / schema / table — comes from <code>hierarchy</code> + <code>name</code>. That <em>is</em> the credential-free projection <span class="id">RQ-5</span> asks for.</li>
+  </ol>
+
+  <div class="note">
+    <h4>Where credentials leak — and the reference implementation that already fixes it</h4>
+    <p>
+      JDBC URLs. <code>CatalogDatasetFacet.metadataUri</code>'s own spec example is
+      <code>jdbc:mysql://host:3306/iceberg_database</code>, and real JDBC strings routinely append
+      <code>?user=…&amp;password=…</code>. Because <code>uri</code> is on the redaction <em>exemption</em> list,
+      nothing downstream catches it.
+    </p>
+    <p>
+      <strong>The Java client already solves this.</strong> <code>JdbcUrlSanitizer.dropSensitiveData()</code>
+      applies five passes: strip slash-delimited userinfo, strip colon-delimited userinfo, remove
+      <code>user=</code>/<code>username=</code>/<code>password=</code> parameters case-insensitively, collapse
+      duplicated delimiters, then <strong>drop the entire query string</strong>. Reach it through the public
+      <code>JdbcDatasetUtils</code>, which dispatches over ~15 vendor extractors.
+    </p>
+    <p>
+      Python has no equivalent — port those five rules. Note the last one is stricter than an allow-list: it
+      discards all query parameters rather than vetting them. Adopt that posture. <span class="id">R-03</span>
+    </p>
+  </div>
+
+  <div class="note soft">
+    <h4>One honest qualification</h4>
+    <p>
+      Credential exclusion is <strong>convention plus tested implementation, not a normative spec
+      prohibition</strong>. No clause forbids putting a password in a namespace — the 28 <code>Naming</code>
+      classes simply give you no parameter with which to do so, and the JDBC path actively strips them. That is
+      strong, but it means the guarantee is yours to maintain in any code path that builds identifiers by hand.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="ontology">
+  <h2><span class="num">06</span>Ontology: dual-emit, because neither mechanism suffices alone</h2>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:34%">Capability</th><th style="width:33%">TagsDatasetFacet</th><th>Custom <code>ontology</code> facet</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Structure</td><td>Flat <code>key</code>/<code>value</code> strings</td><td>Arbitrary nested JSON</td></tr>
+        <tr><td>Column-level scope</td><td><span class="tag t-yes">Yes</span> via <code>field</code></td><td><span class="tag t-yes">Yes</span> if you model it</td></tr>
+        <tr><td>Term URI, ontology version, confidence, curator, timestamp</td><td><span class="tag t-no">No</span> not without string-encoding</td><td><span class="tag t-yes">Native</span></td></tr>
+        <tr><td>Rendered by existing backends</td><td><span class="tag t-yes">Yes</span> tags are a common first-class UI concept</td><td><span class="tag t-no">No</span> stored verbatim, invisible</td></tr>
+        <tr><td>Schema validation</td><td>By the spec</td><td>By your self-hosted schema</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Emit both from one source of truth in the curation tool. The custom facet is the system of record; the tags
+    block is a lossy projection for human search and filtering.
+  </p>
+
+  <div class="note soft">
+    <h4>The facet key is not free-form</h4>
+    <p>
+      The spec <em>requires</em> a project prefix: “Custom facets <strong>must</strong> use a distinct prefix
+      named after the project defining them.” The convention is key <code>{prefix}_{name}</code> in camelCase
+      for a schema class <code>{prefix}{Name}{Entity}Facet</code> in PascalCase — the shipped example being
+      <code>bigQuery_statistics</code> / <code>BigQueryStatisticsJobFacet</code>. A bare <code>"ontology"</code>
+      key is non-conformant and risks colliding with a future standard facet.
+    </p>
+    <p>
+      <code>_schemaURL</code> is equally constrained: it “must be an immutable pointer… should include a tag of a
+      git sha and <strong>not a branch name</strong>.” Version it in the path; never point at
+      <code>main</code>.
+    </p>
+  </div>
+
+<pre><code><span class="k">"acme_ontology"</span>: {
+  <span class="k">"_producer"</span>: <span class="s">"https://your.org/datasource-registry/1.4.2"</span>,
+  <span class="k">"_schemaURL"</span>: <span class="s">"https://your.org/schemas/openlineage/v2026.3.1/AcmeOntologyDatasetFacet.json"</span>,
+  <span class="k">"ontologyVersion"</span>: <span class="s">"2026.3"</span>,
+  <span class="k">"classifications"</span>: [
+    { <span class="k">"termUri"</span>: <span class="s">"https://your.org/ontology/term/CustomerOrder"</span>, <span class="k">"scope"</span>: <span class="s">"DATASET"</span>,
+      <span class="k">"confidence"</span>: 1.0, <span class="k">"curator"</span>: <span class="s">"user:jdoe"</span> },
+    { <span class="k">"termUri"</span>: <span class="s">"https://your.org/ontology/term/TaxIdentifier"</span>, <span class="k">"scope"</span>: <span class="s">"FIELD"</span>,
+      <span class="k">"field"</span>: <span class="s">"tax_id"</span>, <span class="k">"confidence"</span>: 0.92, <span class="k">"curator"</span>: <span class="s">"service:auto-classifier"</span> }
+  ]
+},
+<span class="k">"tags"</span>: { <span class="k">"tags"</span>: [        <span class="c">// lossy projection, but it renders</span>
+  { <span class="k">"key"</span>: <span class="s">"ontology.term"</span>, <span class="k">"value"</span>: <span class="s">"CustomerOrder"</span>, <span class="k">"source"</span>: <span class="s">"ONTOLOGY"</span> },
+  { <span class="k">"key"</span>: <span class="s">"ontology.term"</span>, <span class="k">"value"</span>: <span class="s">"TaxIdentifier"</span>, <span class="k">"source"</span>: <span class="s">"ONTOLOGY"</span>, <span class="k">"field"</span>: <span class="s">"tax_id"</span> }
+]}</code></pre>
+
+  <p>
+    Host the custom schema at a stable, resolvable URL with the version in the path, so <code>_schemaURL</code>
+    pins a version. <code>spec/registry/</code> in the OpenLineage repo is for facets <em>contributed upstream</em>
+    — an internal facet does not belong there unless you intend to propose it.
+  </p>
+
+  <h3>Curation state — do not overload lifecycleStateChange</h3>
+
+  <p>
+    <span class="id">RQ-1</span> implies records sit incomplete for long periods, and OpenLineage has no notion
+    of a draft entity. <code>LifecycleStateChangeDatasetFacet</code> looks tempting and is wrong: its enum is
+    closed (<code>ALTER, CREATE, DROP, OVERWRITE, RENAME, TRUNCATE</code>) and describes the <em>data object's</em>
+    lifecycle, not the <em>catalog entry's</em> maturity. Use a tag with a vocabulary you own:
+  </p>
+
+<pre><code>DECLARED → SAMPLE_ONLY → SOURCE_IDENTIFIED → CONNECTION_ESTABLISHED → CLASSIFIED → PRODUCTION</code></pre>
+
+  <p>
+    Once <code>lineage</code> ships it offers a sharper distinction tags cannot express: an omitted
+    <code>inputs</code> means “upstream unknown, still investigating,” while <code>inputs: []</code> explicitly
+    means “investigated, confirmed no tracked upstream.” That is a genuinely useful curation state.
+  </p>
+</section>
+
+<!-- ============================================ -->
+<section id="flow">
+  <h2><span class="num">07</span>End-to-end flow</h2>
+
+  <p class="lede">
+    Sixteen stages from “an analyst opens a record” to retirement. Idempotent stages can be safely re-emitted;
+    the three that cannot are the ones that mint a new <code>runId</code>.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:52px">#</th><th style="width:150px">Stage</th><th style="width:160px">Trigger</th>
+          <th style="width:130px">Event</th><th style="width:200px">Entity</th><th>Key facets</th><th style="width:88px">Idempotent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="nw"><span class="id">S-0</span></td><td>Declare intent</td><td>Analyst opens a record</td><td class="mono">—</td><td>—</td><td>Internal only; nothing emitted</td><td>—</td></tr>
+        <tr><td class="nw"><span class="id">S-1</span></td><td>Register sample file</td><td>CSV/JSON extract received</td><td class="mono">DatasetEvent</td><td class="mono">file://curation-host</td><td><code>datasetType</code> <code>storage</code> <code>documentation</code> <code>tags</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-2</span></td><td>Infer schema</td><td>Parser reads header + rows</td><td class="mono">DatasetEvent</td><td>same as S-1</td><td><code>schema</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-3</span></td><td>Profile the sample</td><td>Profiler job runs</td><td class="mono">RunEvent ×2</td><td class="mono">profile.orders_sample</td><td><code>inputFacets.dataQualityMetrics</code> <code>jobType</code></td><td><span class="tag t-no">No</span></td></tr>
+        <tr><td class="nw"><span class="id">S-4</span></td><td>Identify true origin</td><td>Analyst learns prod table exists</td><td class="mono">DatasetEvent</td><td class="mono">oracle://…:1521</td><td><code>datasetType</code> <code>hierarchy</code> <code>dataSource</code> <code>tags</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-5</span></td><td>Identify replica</td><td>Analyst learns which replica is readable</td><td class="mono">DatasetEvent</td><td class="mono">snowflake://acme-prod</td><td><code>datasetType</code> <code>hierarchy</code> <code>dataSource</code> <code>tags</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-6</span></td><td><strong>Assert replication edge</strong></td><td>S-4 and S-5 both complete</td><td class="mono">RunEvent (C-1)<br>or DatasetEvent (B)</td><td>job, or replica dataset</td><td><code>jobType</code>; or <code>lineage.inputs</code> + <code>transformations</code></td><td>B <span class="tag t-yes">Yes</span><br>C-1 <span class="tag t-no">No</span></td></tr>
+        <tr><td class="nw"><span class="id">S-7</span></td><td>Bind sample to source</td><td>Analyst confirms the CSV's origin</td><td class="mono">JobEvent</td><td class="mono">extract.orders_sample</td><td><code>inputs=[replica]</code> <code>outputs=[file]</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-8</span></td><td>Register connection</td><td>Credentials obtained</td><td class="mono">—</td><td>Vault entry keyed by S-5 namespace</td><td>Nothing emitted — by design</td><td>—</td></tr>
+        <tr><td class="nw"><span class="id">S-9</span></td><td>Confirm reachability</td><td>Connection test succeeds</td><td class="mono">DatasetEvent</td><td>S-5 dataset</td><td><code>tags</code> state advance; <code>schema</code> from live DDL</td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-10</span></td><td>Classify by ontology</td><td>Curator or auto-classifier assigns terms</td><td class="mono">DatasetEvent</td><td>S-5, and S-4 for the logical entity</td><td>custom <code>ontology</code> + <code>tags</code> projection</td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-11</span></td><td>Enrich progressively</td><td>Any new fact learned</td><td class="mono">DatasetEvent</td><td>any</td><td>only the facets that changed — but each one <strong>complete</strong>: <code>ownership</code> <code>documentation</code> <code>schema</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-12</span></td><td>Begin live ingestion</td><td>Real pipeline runs</td><td class="mono">RunEvent</td><td>your ETL job</td><td>full runtime lineage; <code>inputFacets</code> on read</td><td><span class="tag t-no">No</span></td></tr>
+        <tr><td class="nw"><span class="id">S-13</span></td><td>Supersede the sample</td><td>Live source replaces the extract</td><td class="mono">DatasetEvent</td><td>sample file dataset</td><td><code>tags</code> → <code>SUPERSEDED</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-14</span></td><td>Retract a fact</td><td>A prior assertion proves wrong</td><td class="mono">DatasetEvent</td><td>any</td><td><code>{"&lt;facet&gt;": {"_deleted": true}}</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+        <tr><td class="nw"><span class="id">S-15</span></td><td>Retire</td><td>Source decommissioned</td><td class="mono">DatasetEvent</td><td>any</td><td><code>lifecycleStateChange: DROP</code></td><td><span class="tag t-yes">Yes</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Requirement traceability</h3>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:60px">Req</th><th style="width:29%">Primary mechanism</th><th style="width:130px">Stages</th><th>Residual gap</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="nw"><span class="id">RQ-1</span></td><td><code>DatasetEvent</code>, one per curation act</td><td class="mono">S-1,2,9,11,14</td><td>Merge semantics unverified — <span class="id">R-01</span></td></tr>
+        <tr><td class="nw"><span class="id">RQ-2</span></td><td>File dataset + <code>datasetType(FILE)</code> + <code>storage</code></td><td class="mono">S-1–3, 7, 13</td><td><code>storageLayer</code> vocabulary — <span class="id">R-05</span></td></tr>
+        <tr><td class="nw"><span class="id">RQ-3</span></td><td>Two datasets, native naming per platform</td><td class="mono">S-4, S-5</td><td>Snowflake format lock-in — <span class="id">R-02</span></td></tr>
+        <tr><td class="nw"><span class="id">RQ-4</span></td><td><code>lineage</code> facet (target) / replication job (today)</td><td class="mono">S-6</td><td>Unreleased — <span class="id">R-08</span>; static ingestion — <span class="id">R-06</span></td></tr>
+        <tr><td class="nw"><span class="id">RQ-5</span></td><td>Credential-free namespace as vault key</td><td class="mono">S-8</td><td>URI sanitization discipline — <span class="id">R-03</span></td></tr>
+        <tr><td class="nw"><span class="id">RQ-6</span></td><td>Custom <code>ontology</code> facet + <code>tags</code> projection</td><td class="mono">S-10</td><td>Custom facets invisible to backends — <span class="id">R-07</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="risks">
+  <h2><span class="num">08</span>Risks</h2>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th style="width:56px">ID</th><th style="width:26%">Risk</th><th style="width:88px">Severity</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="nw"><span class="id">R-06</span></td>
+          <td>Static-lineage ingestion support is uneven. If the chosen backend drops <code>DatasetEvent</code>, the whole registration model collapses.</td>
+          <td><span class="tag t-crit">Critical</span></td>
+          <td>Verify before committing. Fallback: model every curation act as a <code>RunEvent</code> from a synthetic <code>curation</code> job — universal, ugly, and identity-preserving, so it stays a transport decision.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-01</span></td>
+          <td><strong>Resolved, and inverted.</strong> Semantics are spec-mandated, not consumer-defined. The residual risk is the opposite of what was feared: a producer emitting a facet containing only the field it just learned <strong>silently destroys the rest of that facet</strong>.</td>
+          <td><span class="tag t-high">High</span></td>
+          <td>Never emit a partial facet. Materialize the complete current value from your master record and send the whole object, enforced in one serialization layer.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-02</span></td>
+          <td>Snowflake namespace format is effectively irreversible; migrating later breaks node identity.</td>
+          <td><span class="tag t-high">High</span></td>
+          <td>Standardize on <code>snowflake://{org}-{account}</code> from the first event. Record the convention as data, not code.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-03</span></td>
+          <td>JDBC URIs smuggle credentials in userinfo and query parameters, and <code>uri</code> is redaction-exempt.</td>
+          <td><span class="tag t-med">Medium</span><br><span class="mono" style="font-size:11px">Java mitigated</span></td>
+          <td>Java: use <code>JdbcDatasetUtils</code>, which routes through <code>JdbcUrlSanitizer</code>. Python: port its five rules — including dropping the whole query string. Unit-test against the vendor URL forms you use.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-08</span></td>
+          <td>Depending on the <code>lineage</code> facet before it ships.</td>
+          <td><span class="tag t-high">High</span></td>
+          <td>Build to Tier C-1, keep the dataset identities Tier B needs, re-check <code>git tag --contains 2cfa2594b</code> before switching.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-04</span></td>
+          <td>Overloading <code>lifecycleStateChange</code> for curation state — closed enum, wrong subject.</td>
+          <td><span class="tag t-med">Medium</span></td>
+          <td>Use a <code>registration_state</code> tag with your own vocabulary. Reserve the facet for real DDL.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-07</span></td>
+          <td>Custom facets are stored but invisible to backend UIs — not rendered, not searchable.</td>
+          <td><span class="tag t-med">Medium</span></td>
+          <td>The <code>tags</code> projection exists for exactly this. Accept that the ontology tool is the authority and OpenLineage carries a reference.</td>
+        </tr>
+        <tr>
+          <td class="nw"><span class="id">R-05</span></td>
+          <td><code>storageLayer</code> is required but has no documented value for a plain CSV.</td>
+          <td><span class="tag t-low">Low</span></td>
+          <td><code>additionalProperties: true</code> means <code>"file"</code> validates. Pick one, document it, apply consistently. Cosmetic.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="open">
+  <h2><span class="num">09</span>Open questions</h2>
+
+  <p class="lede">
+    A five-angle web research pass was run against primary sources on 2026-08-29. Four angles resolved; every
+    finding is folded into the sections above. The consumer/backend angle returned nothing verifiable and stays
+    open — reported as a gap rather than filled by inference.
+  </p>
+
+  <h4>Resolved</h4>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:34%">Question</th><th>Answer</th></tr></thead>
+      <tbody>
+        <tr><td>Do backends merge facets, or snapshot?</td><td><strong>Neither — it isn't a backend choice.</strong> The spec mandates per-facet-name atomic replacement with event-level additivity. This inverted <span class="id">R-01</span>.</td></tr>
+        <tr><td>Is credential exclusion normative?</td><td>Convention plus tested implementation, <em>not</em> a normative prohibition. Java ships <code>JdbcUrlSanitizer</code>; the 28 <code>Naming</code> classes accept no credential parameter.</td></tr>
+        <tr><td>Custom facet naming rules?</td><td>Normative. Project prefix mandatory, <code>{prefix}_{name}</code> key, immutable versioned <code>_schemaURL</code>.</td></tr>
+        <tr><td>Is the symlinks rejection defensible?</td><td>Yes — the proposal itself separates “symlinks” (naming variants) from “dataset connections” (two distinct entities).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Still open — verify against your chosen backend</h4>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:46%">Question</th><th style="width:30%">Why it matters</th><th style="width:80px">Blocks</th><th style="width:90px">Status</th></tr></thead>
+      <tbody>
+        <tr><td>Does Marquez ingest <code>DatasetEvent</code>/<code>JobEvent</code>, and render their facets?</td><td>The static-lineage model rests on it</td><td class="nw"><span class="id">R-06</span></td><td><span class="tag t-pen">Open</span></td></tr>
+        <tr><td>Same for DataHub, OpenMetadata, Atlan, Egeria, Manta</td><td>Backend selection</td><td class="nw"><span class="id">R-06</span></td><td><span class="tag t-pen">Open</span></td></tr>
+        <tr><td>Does any backend implement <code>_deleted</code> tombstones correctly?</td><td>Retraction at <span class="id">S-14</span> silently no-ops if not</td><td class="nw"><span class="id">R-01</span></td><td><span class="tag t-pen">Open</span></td></tr>
+        <tr><td>Which backends surface <code>TagsDatasetFacet</code> in search and filter UI?</td><td>Dual-emit only pays off if tags render</td><td class="nw"><span class="id">R-07</span></td><td><span class="tag t-pen">Open</span></td></tr>
+        <tr><td>Does any backend render <code>SymlinksDatasetFacet</code> as node merging?</td><td>Would confirm the Option A rejection empirically</td><td class="nw">—</td><td><span class="tag t-pen">Open</span></td></tr>
+        <tr><td>Any consumer support for <code>LineageDatasetFacet</code> yet?</td><td>Would promote Tier B from target to shippable</td><td class="nw"><span class="id">R-08</span></td><td><span class="tag t-pen">Open</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <h4>The cheapest way to close all six</h4>
+    <p>
+      Stand up the candidate backend, emit the <span class="id">S-1</span>→<span class="id">S-6</span> sequence
+      from §07, and read back what it stored. That is a half-day spike, and it de-risks every Critical and High
+      item in §08 at once.
+    </p>
+  </div>
+
+  <h3>Documentation defects worth knowing about</h3>
+
+  <p>
+    Minor, but they will mislead anyone reading the docs rather than the schemas.
+  </p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:38%">Location</th><th>Defect</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">dataset-facets/data_source.md</td><td>Example uses <code>"url"</code>; schema 1-0-1 defines <code>"uri"</code>. Also cites version 1-0-0 against a 1-0-1 schema.</td></tr>
+        <tr><td class="mono">dataset-facets/symlinks.md</td><td><code>identifiers</code> example is an array containing bare key-value pairs rather than an object. Will not parse.</td></tr>
+        <tr><td class="mono">dataset-facets/tag-facet.md</td><td><code>_producer</code>/<code>_schemaURL</code> shown as siblings of <code>facets</code> rather than inside the <code>tags</code> object. Malformed as written.</td></tr>
+        <tr><td class="mono">facets/custom-facets.md</td><td>Uses the pre-<code>facet_v2</code> API (<code>openlineage.client.run</code>, <code>.facet</code>). Current code is <code>event_v2</code> / <code>generated.*</code>.</td></tr>
+        <tr><td class="mono">spec/Naming.md</td><td>Obsolete stub, still linked as “The OpenLineage Naming Spec” from the live naming doc.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>
+    Sourced from the OpenLineage repository at commit <code>b995ee00c</code> (2026-08-28), release
+    <code>1.52.0</code>, spec <code>2-0-2</code> — principally <code>spec/OpenLineage.json</code>,
+    <code>spec/OpenLineage.md</code>, <code>spec/facets/*.json</code>,
+    <code>proposals/1837/static_lineage.md</code>, and the Java and Python client sources. Facet versions are
+    <code>$id</code> values at that commit and drift between releases. Claims marked
+    <span class="tag t-inf">Inferred</span> follow from the spec but are not stated in it.
+  </p>
+  <p>
+    Corroborated by a five-angle web research pass on 2026-08-29 (105 agents, 3-vote adversarial verification).
+    Where its findings met the repository at HEAD, the repository won; where it corrected an inference — the
+    facet replacement semantics — the correction is folded in and marked Verified.
+  </p>
+  <p>
+    A machine-readable companion with stable claim IDs, per-claim sources, and a reviewer verification checklist
+    is at <code>analysis/openlineage-datasource-onboarding.agent.md</code>.
+  </p>
+</footer>
+
+</div>
